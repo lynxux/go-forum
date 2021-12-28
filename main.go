@@ -30,8 +30,12 @@ func main() {
 	5.注册路由
 	6.启动服务（优雅关机）
 	*/
+	if len(os.Args) < 2 {
+		fmt.Println("need config file.eg: bluebell config.yaml")
+		return
+	}
 	//1 加载配置
-	if err := settings.Init(); err != nil {
+	if err := settings.Init(os.Args[1]); err != nil {
 		fmt.Println("init settings failed! err: ", err)
 		return
 	}

@@ -2,6 +2,7 @@ package routes
 
 import (
 	"fmt"
+	"github.com/gin-contrib/pprof"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -25,12 +26,21 @@ func Setup(mode string) *gin.Engine {
 
 	//r := gin.New()
 	r := gin.Default()
+
+	r.LoadHTMLFiles("./templates/index.html")
+	r.Static("/static", "./static")
+	r.GET("/", func(c *gin.Context) {
+		c.HTML(200, "index.html", nil)
+	})
+
 	v1 := r.Group("/api/v1")
 
 	//logger, _ := zap.NewProduction()
 	//设置中间件，这里使用zap库以及ginzap
 	v1.Use(ginzap.Ginzap(zap.L(), time.RFC3339, true))
 	v1.Use(ginzap.RecoveryWithZap(zap.L(), true))
+	//v1.Use(middleware.RateLimitMiddleware(time.Second*2, 1)) //ratelimit
+
 	//注册业务
 	v1.POST("/signup", controllers.SignUpHandler)
 	//登录业务
@@ -62,6 +72,8 @@ func Setup(mode string) *gin.Engine {
 	v1.GET("/version", func(c *gin.Context) {
 		c.String(200, "to do")
 	})
+
+	pprof.Register(r) //注册pprof相关路由
 
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
